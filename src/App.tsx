@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { Header } from "./components/Header";
-import { Sidebar } from "./components/Sidebar";
-import { TicketList } from "./components/TicketList";
-import { TicketDetails } from "./components/TicketDetails";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "./components/ui/sheet";
-import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
-import { Badge } from "./components/ui/badge";
+import {useState} from "react";
+import {Header} from "./components/Header";
+import {Sidebar} from "./components/Sidebar";
+import {TicketList} from "./components/TicketList";
+import {TicketDetails} from "./components/TicketDetails";
+import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "./components/ui/sheet";
+import {Card, CardContent, CardHeader, CardTitle} from "./components/ui/card";
+import {Badge} from "./components/ui/badge";
 import type {Ticket} from "./types/ticket";
-import { mockTickets } from "./data/mockTickets";
-import { BarChart3, Clock, AlertCircle, CheckCircle } from "lucide-react";
+import {mockTickets} from "./data/mockTickets";
+import {AlertCircle, BarChart3, CheckCircle, Clock} from "lucide-react";
 
 export default function App() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -20,13 +20,13 @@ export default function App() {
         setTickets(prev =>
             prev.map(ticket =>
                 ticket.id === ticketId
-                    ? { ...ticket, ...updates }
+                    ? {...ticket, ...updates}
                     : ticket
             )
         );
 
         if (selectedTicket?.id === ticketId) {
-            setSelectedTicket(prev => prev ? { ...prev, ...updates } : null);
+            setSelectedTicket(prev => prev ? {...prev, ...updates} : null);
         }
     };
 
@@ -42,7 +42,7 @@ export default function App() {
         const resolved = tickets.filter(t => t.status === "resolved").length;
         const critical = tickets.filter(t => t.priority === "critical").length;
 
-        return { total, open, inProgress, resolved, critical };
+        return {total, open, inProgress, resolved, critical};
     };
 
     const stats = getTicketStats();
@@ -59,7 +59,7 @@ export default function App() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Tickets</CardTitle>
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                        <BarChart3 className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.total}</div>
@@ -69,7 +69,7 @@ export default function App() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Open</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-blue-500" />
+                        <AlertCircle className="h-4 w-4 text-blue-500"/>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.open}</div>
@@ -82,7 +82,7 @@ export default function App() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-                        <Clock className="h-4 w-4 text-orange-500" />
+                        <Clock className="h-4 w-4 text-orange-500"/>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.inProgress}</div>
@@ -95,7 +95,7 @@ export default function App() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Resolved</CardTitle>
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-green-500"/>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.resolved}</div>
@@ -108,7 +108,7 @@ export default function App() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Critical</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <AlertCircle className="h-4 w-4 text-red-500"/>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.critical}</div>
@@ -185,7 +185,8 @@ export default function App() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="font-medium">SLA Alerts</p>
-                                <p className="text-sm text-muted-foreground">Get warned when tickets approach SLA deadline</p>
+                                <p className="text-sm text-muted-foreground">Get warned when tickets approach SLA
+                                    deadline</p>
                             </div>
                             <Badge>Enabled</Badge>
                         </div>
