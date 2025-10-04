@@ -3,10 +3,12 @@ import {Header} from "./components/Header";
 import {Sidebar} from "./components/Sidebar";
 import {TicketList} from "./components/TicketList";
 import {TicketDetails} from "./components/TicketDetails";
+import {Login} from "./components/Login";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "./components/ui/sheet";
 import {Card, CardContent, CardHeader, CardTitle} from "./components/ui/card";
 import {Badge} from "./components/ui/badge";
 import type {Ticket} from "./types/ticket";
+import type {LoginRequest, RegisterRequest} from "./types/auth";
 import {useCommunicationService} from "./hooks/useCommunicationService";
 import {AlertCircle, BarChart3, CheckCircle, Clock} from "lucide-react";
 import {getTicketStats} from "./utils";
@@ -16,16 +18,23 @@ export default function App() {
     const [activeTab, setActiveTab] = useState("dashboard");
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-    // Use communication service for real-time data
+    // Use communication service with authentication
     const {
         isConnected,
+        isInitialized,
+        error,
+        currentAgentId,
+        login,
+        register,
+        logout,
         getTickets,
         updateTicketStatus,
         onTicketCreated,
         onTicketUpdated,
         onTicketStatusChanged,
-    } = useCommunicationService();
+    } = useCommunicationService({autoConnect: false}); // Don't auto-connect, wait for authentication
 
     const loadTickets = useCallback(async () => {
         try {
@@ -33,20 +42,58 @@ export default function App() {
             setTickets(response.data);
         } catch (error) {
             console.error('Failed to load tickets from backend:', error);
-            // Keep empty array if backend is not available
             setTickets([]);
         }
     }, [getTickets]);
 
-    // Load tickets from backend when connected
+    // Handle login
+    const handleLogin = async (data: LoginRequest) => {
+        setIsAuthenticating(true);
+        try {
+            await login(data);
+            console.log('Login successful');
+        } catch (err) {
+            console.error('Login failed:', err);
+        } finally {
+            setIsAuthenticating(false);
+        }
+    };
+
+    // Handle registration
+    const handleRegister = async (data: RegisterRequest) => {
+        setIsAuthenticating(true);
+        try {
+            await register(data);
+            console.log('Registration successful');
+        } catch (err) {
+            console.error('Registration failed:', err);
+        } finally {
+            setIsAuthenticating(false);
+        }
+    };
+
+    // Handle logout
+    const handleLogout = async () => {
+        try {
+            await logout();
+            setTickets([]);
+            setSelectedTicket(null);
+        } catch (err) {
+            console.error('Logout failed:', err);
+        }
+    };
+
+    // Load tickets when connected
     useEffect(() => {
-        if (isConnected) {
+        if (isConnected && isInitialized) {
             loadTickets();
         }
-    }, [isConnected, loadTickets]);
+    }, [isConnected, isInitialized, loadTickets]);
 
     // Set up real-time event handlers
     useEffect(() => {
+        if (!isInitialized) return;
+
         onTicketCreated((ticket: Ticket) => {
             console.log('New ticket created via SignalR:', ticket);
             setTickets(prev => [ticket, ...prev]);
@@ -62,23 +109,19 @@ export default function App() {
 
         onTicketStatusChanged((payload) => {
             console.log('Ticket status changed via SignalR:', payload);
-            // Refresh tickets to get the latest data
             loadTickets();
         });
-    }, [onTicketCreated, onTicketUpdated, onTicketStatusChanged, selectedTicket, loadTickets]);
+    }, [isInitialized, onTicketCreated, onTicketUpdated, onTicketStatusChanged, selectedTicket, loadTickets]);
 
     const handleTicketUpdate = async (ticketId: string, updates: Partial<Ticket>) => {
-        // Update status via backend API
         if (updates.status) {
             try {
                 await updateTicketStatus(ticketId, {status: updates.status});
-                // The update will be reflected via SignalR event
             } catch (error) {
                 console.error('Failed to update ticket status:', error);
             }
         }
 
-        // Update local state for immediate feedback
         setTickets(prev =>
             prev.map(ticket =>
                 ticket.id === ticketId
@@ -97,6 +140,18 @@ export default function App() {
         // For now, just log - the example component shows how to create tickets
         console.log("Create new ticket - see CommunicationServiceExample component for implementation");
     };
+
+    // Show login screen if not authenticated
+    if (!isInitialized || !currentAgentId) {
+        return (
+            <Login
+                onLogin={handleLogin}
+                onRegister={handleRegister}
+                error={error}
+                isLoading={isAuthenticating}
+            />
+        );
+    }
 
     const stats = getTicketStats(tickets);
 

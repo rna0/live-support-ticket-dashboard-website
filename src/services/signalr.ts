@@ -6,30 +6,51 @@ import type {
     TicketAssignedPayload,
     TicketStatusChangedPayload
 } from '../types/ticket';
+import type {
+    ReceiveMessagePayload,
+    AgentTypingPayload,
+    AgentJoinedPayload,
+    AgentLeftPayload,
+    UpdateQueuePayload
+} from '../types/session';
 
 interface SignalREventHandlers {
+    // Ticket events
     onTicketCreated?: (ticket: Ticket) => void;
     onTicketUpdated?: (ticket: Ticket) => void;
     onTicketStatusChanged?: (payload: TicketStatusChangedPayload) => void;
     onTicketAssigned?: (payload: TicketAssignedPayload) => void;
     onAgentConnected?: (payload: AgentConnectedPayload) => void;
     onAgentDisconnected?: (payload: AgentDisconnectedPayload) => void;
+
+    // Messaging events
+    onReceiveMessage?: (payload: ReceiveMessagePayload) => void;
+    onAgentTyping?: (payload: AgentTypingPayload) => void;
+    onAgentJoined?: (payload: AgentJoinedPayload) => void;
+    onAgentLeft?: (payload: AgentLeftPayload) => void;
+    onUpdateQueue?: (payload: UpdateQueuePayload) => void;
 }
 
 class SignalRService {
     private connection: HubConnection | null = null;
     private baseURL: string;
-    private hubPath: string = '/hubs/live-support';
+    private hubPath: string = '/hubs';
     private eventHandlers: SignalREventHandlers = {};
     private reconnectAttempts: number = 0;
     private maxReconnectAttempts: number = 5;
-    private reconnectInterval: number = 5000; // 5 seconds
+    private getAccessToken: (() => string | null) | null = null;
 
     constructor(baseURL: string) {
         if (!baseURL) {
             throw new Error('SignalRService requires a baseURL');
         }
-        this.baseURL = baseURL;
+        // Normalize baseURL: remove trailing slash
+        this.baseURL = baseURL.replace(/\/$/, '');
+    }
+
+    // Set token provider function
+    setAccessTokenProvider(tokenProvider: () => string | null): void {
+        this.getAccessToken = tokenProvider;
     }
 
     async connect(): Promise<void> {
@@ -39,18 +60,33 @@ class SignalRService {
         }
 
         try {
-            this.connection = new HubConnectionBuilder()
-                .withUrl(`${this.baseURL}${this.hubPath}`)
-                .withAutomaticReconnect({
-                    nextRetryDelayInMilliseconds: (retryContext) => {
-                        if (retryContext.previousRetryCount < this.maxReconnectAttempts) {
-                            return this.reconnectInterval;
+            const hubUrl = `${this.baseURL}${this.hubPath}`;
+            console.log('[SignalR] Connecting to:', hubUrl);
+
+            const builder = new HubConnectionBuilder()
+                .withUrl(hubUrl, {
+                    accessTokenFactory: () => {
+                        const token = this.getAccessToken?.() || '';
+                        if (!token) {
+                            console.warn('[SignalR] No access token available');
                         }
-                        return null; // Stop retrying
+                        return token;
                     }
                 })
-                .configureLogging(LogLevel.Information)
-                .build();
+                .withAutomaticReconnect({
+                    nextRetryDelayInMilliseconds: (retryContext) => {
+                        // Exponential backoff: 0, 2, 10, 30 seconds, then stop
+                        if (retryContext.previousRetryCount >= this.maxReconnectAttempts) {
+                            return null; // Stop retrying
+                        }
+
+                        const delays = [0, 2000, 10000, 30000, 30000];
+                        return delays[retryContext.previousRetryCount] || 30000;
+                    }
+                })
+                .configureLogging(LogLevel.Information);
+
+            this.connection = builder.build();
 
             this.connection.onclose(async (error) => {
                 console.log('[SignalR] Connection closed', error);
@@ -92,6 +128,35 @@ class SignalRService {
         }
     }
 
+    // Client-to-server methods
+    async sendMessage(sessionId: string, text: string, attachments?: any[]): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection is not established');
+        }
+        await this.connection.invoke('SendMessage', { sessionId, text, attachments: attachments || [] });
+    }
+
+    async joinRoom(sessionId: string): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection is not established');
+        }
+        await this.connection.invoke('JoinRoom', sessionId);
+    }
+
+    async leaveRoom(sessionId: string): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection is not established');
+        }
+        await this.connection.invoke('LeaveRoom', sessionId);
+    }
+
+    async ping(): Promise<void> {
+        if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
+            throw new Error('SignalR connection is not established');
+        }
+        await this.connection.invoke('Ping');
+    }
+
     setEventHandlers(handlers: SignalREventHandlers): void {
         this.eventHandlers = {...this.eventHandlers, ...handlers};
     }
@@ -108,7 +173,7 @@ class SignalRService {
     }
 
     updateBaseURL(newBaseURL: string): void {
-        this.baseURL = newBaseURL;
+        this.baseURL = newBaseURL.replace(/\/$/, '');
         if (this.isConnected()) {
             console.log('[SignalR] Base URL changed, reconnecting...');
             this.disconnect().then(() => this.connect());
@@ -118,6 +183,7 @@ class SignalRService {
     private registerEventHandlers(): void {
         if (!this.connection) return;
 
+        // Ticket events
         this.connection.on('TicketCreated', (ticket: Ticket) => {
             console.log('[SignalR] TicketCreated:', ticket);
             this.eventHandlers.onTicketCreated?.(ticket);
@@ -147,6 +213,32 @@ class SignalRService {
             console.log('[SignalR] AgentDisconnected:', payload);
             this.eventHandlers.onAgentDisconnected?.(payload);
         });
+
+        // Messaging events (new)
+        this.connection.on('ReceiveMessage', (payload: ReceiveMessagePayload) => {
+            console.log('[SignalR] ReceiveMessage:', payload);
+            this.eventHandlers.onReceiveMessage?.(payload);
+        });
+
+        this.connection.on('AgentTyping', (payload: AgentTypingPayload) => {
+            console.log('[SignalR] AgentTyping:', payload);
+            this.eventHandlers.onAgentTyping?.(payload);
+        });
+
+        this.connection.on('AgentJoined', (payload: AgentJoinedPayload) => {
+            console.log('[SignalR] AgentJoined:', payload);
+            this.eventHandlers.onAgentJoined?.(payload);
+        });
+
+        this.connection.on('AgentLeft', (payload: AgentLeftPayload) => {
+            console.log('[SignalR] AgentLeft:', payload);
+            this.eventHandlers.onAgentLeft?.(payload);
+        });
+
+        this.connection.on('UpdateQueue', (payload: UpdateQueuePayload) => {
+            console.log('[SignalR] UpdateQueue:', payload);
+            this.eventHandlers.onUpdateQueue?.(payload);
+        });
     }
 
     private async handleReconnection(): Promise<void> {
@@ -158,16 +250,18 @@ class SignalRService {
         this.reconnectAttempts++;
         console.log(`[SignalR] Attempting reconnection ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
 
+        // Exponential backoff
+        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 30000);
+
         setTimeout(async () => {
             try {
                 await this.connect();
             } catch (error) {
                 console.error('[SignalR] Reconnection failed:', error);
             }
-        }, this.reconnectInterval);
+        }, delay);
     }
 }
 
 export {SignalRService};
 export type {SignalREventHandlers};
-
