@@ -7,7 +7,7 @@ import {Separator} from "./ui/separator";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 import {Calendar, Clock, User} from "lucide-react";
 import {useState} from "react";
-import {formatDateFull, getAssignedAgentName, getPriorityColorClasses, getStatusColorClasses} from "../utils";
+import {formatDateFull, getAssignedAgentName, getPriorityColorClasses, getStatusColorClasses} from "@/utils";
 
 interface TicketDetailsProps {
     ticket: Ticket;

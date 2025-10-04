@@ -6,7 +6,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./u
 import {Clock, Plus, Search, Ticket as TicketIcon, User} from "lucide-react";
 import type {Ticket} from "../types/ticket";
 import {Input} from "@/components/ui/input.tsx";
-import {formatDateCompact, getAssignedAgentName, getPriorityColorClasses, getStatusColorClasses} from "../utils";
+import {formatDateCompact, getAssignedAgentName, getPriorityColorClasses, getStatusColorClasses} from "@/utils";
 
 interface TicketListProps {
     tickets: Ticket[];
