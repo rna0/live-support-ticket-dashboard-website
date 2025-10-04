@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Header} from "./components/Header";
 import {Sidebar} from "./components/Sidebar";
 import {TicketList} from "./components/TicketList";
@@ -7,16 +7,78 @@ import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "./
 import {Card, CardContent, CardHeader, CardTitle} from "./components/ui/card";
 import {Badge} from "./components/ui/badge";
 import type {Ticket} from "./types/ticket";
-import {mockTickets} from "./data/mockTickets";
+import {useCommunicationService} from "./hooks/useCommunicationService";
 import {AlertCircle, BarChart3, CheckCircle, Clock} from "lucide-react";
+import {getTicketStats} from "./utils";
 
 export default function App() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("dashboard");
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-    const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+    const [tickets, setTickets] = useState<Ticket[]>([]);
 
-    const handleTicketUpdate = (ticketId: string, updates: Partial<Ticket>) => {
+    // Use communication service for real-time data
+    const {
+        isConnected,
+        getTickets,
+        updateTicketStatus,
+        onTicketCreated,
+        onTicketUpdated,
+        onTicketStatusChanged,
+    } = useCommunicationService();
+
+    const loadTickets = useCallback(async () => {
+        try {
+            const response = await getTickets();
+            setTickets(response.data);
+        } catch (error) {
+            console.error('Failed to load tickets from backend:', error);
+            // Keep empty array if backend is not available
+            setTickets([]);
+        }
+    }, [getTickets]);
+
+    // Load tickets from backend when connected
+    useEffect(() => {
+        if (isConnected) {
+            loadTickets();
+        }
+    }, [isConnected, loadTickets]);
+
+    // Set up real-time event handlers
+    useEffect(() => {
+        onTicketCreated((ticket: Ticket) => {
+            console.log('New ticket created via SignalR:', ticket);
+            setTickets(prev => [ticket, ...prev]);
+        });
+
+        onTicketUpdated((ticket: Ticket) => {
+            console.log('Ticket updated via SignalR:', ticket);
+            setTickets(prev => prev.map(t => t.id === ticket.id ? ticket : t));
+            if (selectedTicket?.id === ticket.id) {
+                setSelectedTicket(ticket);
+            }
+        });
+
+        onTicketStatusChanged((payload) => {
+            console.log('Ticket status changed via SignalR:', payload);
+            // Refresh tickets to get the latest data
+            loadTickets();
+        });
+    }, [onTicketCreated, onTicketUpdated, onTicketStatusChanged, selectedTicket, loadTickets]);
+
+    const handleTicketUpdate = async (ticketId: string, updates: Partial<Ticket>) => {
+        // Update status via backend API
+        if (updates.status) {
+            try {
+                await updateTicketStatus(ticketId, {status: updates.status});
+                // The update will be reflected via SignalR event
+            } catch (error) {
+                console.error('Failed to update ticket status:', error);
+            }
+        }
+
+        // Update local state for immediate feedback
         setTickets(prev =>
             prev.map(ticket =>
                 ticket.id === ticketId
@@ -32,20 +94,11 @@ export default function App() {
 
     const handleCreateTicket = () => {
         // In a real app, this would open a create ticket modal
-        console.log("Create new ticket");
+        // For now, just log - the example component shows how to create tickets
+        console.log("Create new ticket - see CommunicationServiceExample component for implementation");
     };
 
-    const getTicketStats = () => {
-        const total = tickets.length;
-        const open = tickets.filter(t => t.status === "open").length;
-        const inProgress = tickets.filter(t => t.status === "in-progress").length;
-        const resolved = tickets.filter(t => t.status === "resolved").length;
-        const critical = tickets.filter(t => t.priority === "critical").length;
-
-        return {total, open, inProgress, resolved, critical};
-    };
-
-    const stats = getTicketStats();
+    const stats = getTicketStats(tickets);
 
     const renderDashboard = () => (
         <div className="p-6 space-y-6">
@@ -72,7 +125,7 @@ export default function App() {
                         <AlertCircle className="h-4 w-4 text-blue-500"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.open}</div>
+                        <div className="text-2xl font-bold">{stats.byStatus.open}</div>
                         <Badge className="bg-blue-500 hover:bg-blue-600 text-white mt-2">
                             Open
                         </Badge>
@@ -85,7 +138,7 @@ export default function App() {
                         <Clock className="h-4 w-4 text-orange-500"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.inProgress}</div>
+                        <div className="text-2xl font-bold">{stats.byStatus.inProgress}</div>
                         <Badge className="bg-orange-500 hover:bg-orange-600 text-white mt-2">
                             In Progress
                         </Badge>
@@ -98,7 +151,7 @@ export default function App() {
                         <CheckCircle className="h-4 w-4 text-green-500"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.resolved}</div>
+                        <div className="text-2xl font-bold">{stats.byStatus.resolved}</div>
                         <Badge className="bg-green-500 hover:bg-green-600 text-white mt-2">
                             Resolved
                         </Badge>
@@ -111,7 +164,7 @@ export default function App() {
                         <AlertCircle className="h-4 w-4 text-red-500"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.critical}</div>
+                        <div className="text-2xl font-bold">{stats.byPriority.critical}</div>
                         <Badge className="bg-red-500 hover:bg-red-600 text-white mt-2">
                             Critical
                         </Badge>

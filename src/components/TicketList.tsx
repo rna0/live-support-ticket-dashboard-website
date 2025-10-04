@@ -6,6 +6,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./u
 import {Clock, Plus, Search, Ticket as TicketIcon, User} from "lucide-react";
 import type {Ticket} from "../types/ticket";
 import {Input} from "@/components/ui/input.tsx";
+import {formatDateCompact, getAssignedAgentName, getPriorityColorClasses, getStatusColorClasses} from "../utils";
 
 interface TicketListProps {
     tickets: Ticket[];
@@ -19,50 +20,19 @@ export function TicketList({tickets, onTicketClick, onCreateTicket}: TicketListP
     const [priorityFilter, setPriorityFilter] = useState("all");
 
     const filteredTickets = tickets.filter((ticket) => {
-        const matchesSearch = ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            ticket.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesStatus = statusFilter === "all" || ticket.status === statusFilter;
-        const matchesPriority = priorityFilter === "all" || ticket.priority === priorityFilter;
+        const title = ticket.title;
+        const description = ticket.description;
+        const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            description.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const ticketStatus = ticket.status;
+        const ticketPriority = ticket.priority;
+
+        const matchesStatus = statusFilter === "all" || ticketStatus === statusFilter;
+        const matchesPriority = priorityFilter === "all" || ticketPriority === priorityFilter;
 
         return matchesSearch && matchesStatus && matchesPriority;
     });
-
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case "critical":
-                return "bg-red-500 text-white hover:bg-red-600";
-            case "high":
-                return "bg-orange-500 text-white hover:bg-orange-600";
-            case "medium":
-                return "bg-yellow-500 text-black hover:bg-yellow-600";
-            case "low":
-                return "bg-green-500 text-white hover:bg-green-600";
-            default:
-                return "bg-gray-500 text-white hover:bg-gray-600";
-        }
-    };
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "open":
-                return "bg-blue-500 text-white hover:bg-blue-600";
-            case "in-progress":
-                return "bg-orange-500 text-white hover:bg-orange-600";
-            case "resolved":
-                return "bg-green-500 text-white hover:bg-green-600";
-            default:
-                return "bg-gray-500 text-white hover:bg-gray-600";
-        }
-    };
-
-    const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(date);
-    };
 
     return (
         <div className="flex flex-col h-full">
@@ -87,9 +57,9 @@ export function TicketList({tickets, onTicketClick, onCreateTicket}: TicketListP
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="open">Open</SelectItem>
-                                <SelectItem value="in-progress">In Progress</SelectItem>
-                                <SelectItem value="resolved">Resolved</SelectItem>
+                                <SelectItem value="Open">Open</SelectItem>
+                                <SelectItem value="InProgress">In Progress</SelectItem>
+                                <SelectItem value="Resolved">Resolved</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -99,10 +69,10 @@ export function TicketList({tickets, onTicketClick, onCreateTicket}: TicketListP
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Priority</SelectItem>
-                                <SelectItem value="low">Low</SelectItem>
-                                <SelectItem value="medium">Medium</SelectItem>
-                                <SelectItem value="high">High</SelectItem>
-                                <SelectItem value="critical">Critical</SelectItem>
+                                <SelectItem value="Low">Low</SelectItem>
+                                <SelectItem value="Medium">Medium</SelectItem>
+                                <SelectItem value="High">High</SelectItem>
+                                <SelectItem value="Critical">Critical</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -112,51 +82,57 @@ export function TicketList({tickets, onTicketClick, onCreateTicket}: TicketListP
             {/* Ticket List */}
             <div className="flex-1 overflow-auto p-6">
                 <div className="space-y-4">
-                    {filteredTickets.map((ticket) => (
-                        <Card
-                            key={ticket.id}
-                            className="cursor-pointer hover:shadow-md transition-shadow"
-                            onClick={() => onTicketClick(ticket)}
-                        >
-                            <CardHeader className="pb-3">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-medium truncate">{ticket.title}</h3>
-                                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                            {ticket.description}
-                                        </p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Badge className={getPriorityColor(ticket.priority)}>
-                                            {ticket.priority}
-                                        </Badge>
-                                        <Badge className={getStatusColor(ticket.status)}>
-                                            {ticket.status}
-                                        </Badge>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="pt-0">
-                                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex items-center gap-1">
-                                            <User className="h-3 w-3"/>
-                                            <span>{ticket.assignedAgent}</span>
+                    {filteredTickets.map((ticket) => {
+                        const status = ticket.status;
+                        const priority = ticket.priority;
+                        const assigned = getAssignedAgentName(ticket);
+
+                        return (
+                            <Card
+                                key={ticket.id}
+                                className="cursor-pointer hover:shadow-md transition-shadow"
+                                onClick={() => onTicketClick(ticket)}
+                            >
+                                <CardHeader className="pb-3">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-medium truncate">{ticket.title}</h3>
+                                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                                {ticket.description}
+                                            </p>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <Clock className="h-3 w-3"/>
-                                            <span>{formatDate(ticket.updatedAt)}</span>
+                                        <div className="flex gap-2">
+                                            <Badge className={getPriorityColorClasses(priority)}>
+                                                {ticket.priority}
+                                            </Badge>
+                                            <Badge className={getStatusColorClasses(status)}>
+                                                {ticket.status}
+                                            </Badge>
                                         </div>
                                     </div>
-                                    {ticket.slaTimeLeft && (
-                                        <Badge variant="outline" className="text-xs">
-                                            SLA: {ticket.slaTimeLeft}
-                                        </Badge>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-1">
+                                                <User className="h-3 w-3"/>
+                                                <span>{assigned}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Clock className="h-3 w-3"/>
+                                                <span>{formatDateCompact(ticket.updatedAt)}</span>
+                                            </div>
+                                        </div>
+                                        {ticket.slaTimeLeft && (
+                                            <Badge variant="outline" className="text-xs">
+                                                SLA: {ticket.slaTimeLeft}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
 
                     {filteredTickets.length === 0 && (
                         <div className="text-center text-muted-foreground py-12">

@@ -7,6 +7,7 @@ import {Separator} from "./ui/separator";
 import {Card, CardContent, CardHeader, CardTitle} from "./ui/card";
 import {Calendar, Clock, User} from "lucide-react";
 import {useState} from "react";
+import {formatDateFull, getAssignedAgentName, getPriorityColorClasses, getStatusColorClasses} from "../utils";
 
 interface TicketDetailsProps {
     ticket: Ticket;
@@ -15,9 +16,10 @@ interface TicketDetailsProps {
 }
 
 export function TicketDetails({ticket, onClose: onCloseProp, onUpdate}: TicketDetailsProps) {
-    const [status, setStatus] = useState(ticket.status);
-    const [priority, setPriority] = useState(ticket.priority);
-    const [assignedAgent, setAssignedAgent] = useState(ticket.assignedAgent);
+    // Use backend enum values directly
+    const [status, setStatus] = useState<Ticket["status"]>(ticket.status);
+    const [priority, setPriority] = useState<Ticket["priority"]>(ticket.priority);
+    const [assignedAgent, setAssignedAgent] = useState<string>(ticket.assignedAgent || ticket.assignedAgentId || "");
 
     const handleStatusChange = (value: string) => setStatus(value as Ticket["status"]);
     const handlePriorityChange = (value: string) => setPriority(value as Ticket["priority"]);
@@ -33,50 +35,14 @@ export function TicketDetails({ticket, onClose: onCloseProp, onUpdate}: TicketDe
 
     const handleSave = () => {
         onUpdate(ticket.id, {
+            // send backend enum values directly
             status,
             priority,
-            assignedAgent,
-            updatedAt: new Date()
+            assignedAgent: assignedAgent || undefined,
+            updatedAt: new Date().toISOString()
         });
-    };
 
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case "critical":
-                return "bg-red-500 text-white hover:bg-red-600";
-            case "high":
-                return "bg-orange-500 text-white hover:bg-orange-600";
-            case "medium":
-                return "bg-yellow-500 text-black hover:bg-yellow-600";
-            case "low":
-                return "bg-green-500 text-white hover:bg-green-600";
-            default:
-                return "bg-gray-500 text-white hover:bg-gray-600";
-        }
-    };
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "open":
-                return "bg-blue-500 text-white hover:bg-blue-600";
-            case "in-progress":
-                return "bg-orange-500 text-white hover:bg-orange-600";
-            case "resolved":
-                return "bg-green-500 text-white hover:bg-green-600";
-            default:
-                return "bg-gray-500 text-white hover:bg-gray-600";
-        }
-    };
-
-    const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat('en-US', {
-            weekday: 'short',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(date);
+        onCloseProp();
     };
 
     return (
@@ -86,10 +52,10 @@ export function TicketDetails({ticket, onClose: onCloseProp, onUpdate}: TicketDe
                 <div className="flex items-center gap-3">
                     <h2 className="text-lg font-semibold">Ticket #{ticket.id}</h2>
                     <div className="flex gap-2">
-                        <Badge className={getPriorityColor(ticket.priority)}>
+                        <Badge className={getPriorityColorClasses(ticket.priority)}>
                             {ticket.priority}
                         </Badge>
-                        <Badge className={getStatusColor(ticket.status)}>
+                        <Badge className={getStatusColorClasses(ticket.status)}>
                             {ticket.status}
                         </Badge>
                     </div>
@@ -113,17 +79,17 @@ export function TicketDetails({ticket, onClose: onCloseProp, onUpdate}: TicketDe
                             <div className="flex items-center gap-2 text-sm">
                                 <Calendar className="h-4 w-4 text-muted-foreground"/>
                                 <span className="text-muted-foreground">Created:</span>
-                                <span>{formatDate(ticket.createdAt)}</span>
+                                <span>{formatDateFull(ticket.createdAt)}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                                 <Clock className="h-4 w-4 text-muted-foreground"/>
                                 <span className="text-muted-foreground">Updated:</span>
-                                <span>{formatDate(ticket.updatedAt)}</span>
+                                <span>{formatDateFull(ticket.updatedAt)}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                                 <User className="h-4 w-4 text-muted-foreground"/>
                                 <span className="text-muted-foreground">Assigned:</span>
-                                <span>{ticket.assignedAgent}</span>
+                                <span>{getAssignedAgentName(ticket)}</span>
                             </div>
                             {ticket.slaTimeLeft && (
                                 <div className="flex items-center gap-2 text-sm">
@@ -150,9 +116,9 @@ export function TicketDetails({ticket, onClose: onCloseProp, onUpdate}: TicketDe
                                         <SelectValue/>
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="open">Open</SelectItem>
-                                        <SelectItem value="in-progress">In Progress</SelectItem>
-                                        <SelectItem value="resolved">Resolved</SelectItem>
+                                        <SelectItem value="Open">Open</SelectItem>
+                                        <SelectItem value="InProgress">In Progress</SelectItem>
+                                        <SelectItem value="Resolved">Resolved</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -164,10 +130,10 @@ export function TicketDetails({ticket, onClose: onCloseProp, onUpdate}: TicketDe
                                         <SelectValue/>
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="low">Low</SelectItem>
-                                        <SelectItem value="medium">Medium</SelectItem>
-                                        <SelectItem value="high">High</SelectItem>
-                                        <SelectItem value="critical">Critical</SelectItem>
+                                        <SelectItem value="Low">Low</SelectItem>
+                                        <SelectItem value="Medium">Medium</SelectItem>
+                                        <SelectItem value="High">High</SelectItem>
+                                        <SelectItem value="Critical">Critical</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -208,7 +174,7 @@ export function TicketDetails({ticket, onClose: onCloseProp, onUpdate}: TicketDe
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {ticket.history.map((entry, index) => (
+                            {(ticket.history || []).map((entry, index) => (
                                 <div key={entry.id}>
                                     <div className="flex items-start gap-3">
                                         <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
@@ -217,7 +183,7 @@ export function TicketDetails({ticket, onClose: onCloseProp, onUpdate}: TicketDe
                                                 <span className="font-medium">{entry.agent}</span>
                                                 <span className="text-muted-foreground">{entry.action}</span>
                                                 <span className="text-muted-foreground">
-                          {formatDate(entry.timestamp)}
+                          {formatDateFull(entry.timestamp)}
                         </span>
                                             </div>
                                             <p className="text-sm text-muted-foreground mt-1">
@@ -225,7 +191,7 @@ export function TicketDetails({ticket, onClose: onCloseProp, onUpdate}: TicketDe
                                             </p>
                                         </div>
                                     </div>
-                                    {index < ticket.history.length - 1 && (
+                                    {index < (ticket.history || []).length - 1 && (
                                         <Separator className="my-4"/>
                                     )}
                                 </div>
