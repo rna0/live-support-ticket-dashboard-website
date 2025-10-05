@@ -44,7 +44,7 @@ class CommunicationService {
     private currentAgentId: string | null = null;
     private currentAgentName: string | null = null;
     private currentAgentEmail: string | null = null;
-    private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+    private heartbeatInterval: number | null = null;
     private heartbeatIntervalMs = 45000;
     private signalRReadyPromise: Promise<void> | null = null;
     private signalRReadyResolve: (() => void) | null = null;

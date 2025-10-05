@@ -96,7 +96,7 @@ export default function Dashboard({tickets}: DashboardProps) {
                                     <div className="flex-1">
                                         <p className="text-sm font-medium">{ticket.title}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {ticket.description
+                                            {ticket.description && ticket.description.length > 0
                                                 ? `${ticket.description.substring(0, 60)}${ticket.description.length > 60 ? '...' : ''}`
                                                 : 'No description'}
                                         </p>

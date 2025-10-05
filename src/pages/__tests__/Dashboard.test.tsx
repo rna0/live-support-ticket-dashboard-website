@@ -95,12 +95,13 @@ describe('Dashboard Page', () => {
         render(<Dashboard {...defaultProps} />)
 
         expect(screen.getByText('Login Issue')).toBeInTheDocument()
+        expect(screen.getByText(/cannot log into the system/i)).toBeInTheDocument()
         expect(screen.getByText('Payment Problem')).toBeInTheDocument()
-        expect(screen.getByText('Bug Report')).toBeInTheDocument()
+        expect(screen.getByText(/payment not processing correctly/i)).toBeInTheDocument()
     })
 
     it('shows empty state when no tickets', () => {
-        render(<Dashboard tickets={[]}/>)
+        render(<Dashboard tickets={[]} />)
 
         expect(screen.getByText(/no tickets found/i)).toBeInTheDocument()
     })

@@ -121,9 +121,6 @@ export function TicketDetails({ticket, onClose, onUpdate, onDelete}: TicketDetai
                             Delete
                         </Button>
                     )}
-                    <Button variant="outline" onClick={onClose} disabled={isSaving}>
-                        Close
-                    </Button>
                 </div>
             </div>
 

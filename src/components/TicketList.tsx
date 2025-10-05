@@ -43,7 +43,7 @@ export function TicketList({tickets, onTicketClick}: TicketListProps) {
             {/* Filter Controls */}
             <div className="p-6 border-b space-y-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Support Tickets</h1>
+                    <h1 className="text-2xl font-bold">Jiraff Dashboard</h1>
                     <Button onClick={() => navigate("/tickets/create")}>
                         <Plus className="h-4 w-4 mr-2"/>
                         Create Ticket

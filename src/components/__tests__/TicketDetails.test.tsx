@@ -63,18 +63,15 @@ describe('TicketDetails Component', () => {
     it('renders ticket details correctly', () => {
         render(<TicketDetails {...defaultProps} />)
 
+        expect(screen.getByRole('heading', {name: /ticket #1/i})).toBeInTheDocument()
         expect(screen.getByText('Test Ticket')).toBeInTheDocument()
         expect(screen.getByText('This is a test ticket description')).toBeInTheDocument()
     })
 
-    it('has a close button', () => {
+    it('has a delete button when onDelete is provided', () => {
         render(<TicketDetails {...defaultProps} />)
 
-        // Look for any element that could be a close button
-        const closeButton = screen.getByRole('button', {name: /close/i}) ||
-            document.querySelector('button[aria-label="Close"]') ||
-            document.querySelector('button svg.lucide-x')?.closest('button');
-
-        expect(closeButton).not.toBeNull();
+        const deleteButton = screen.getByRole('button', {name: /delete/i})
+        expect(deleteButton).toBeInTheDocument()
     })
 })
