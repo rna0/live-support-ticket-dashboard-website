@@ -1,3 +1,4 @@
+import type {FormEvent} from "react";
 import {useState} from 'react';
 import {Button} from './ui/button';
 import {Input} from './ui/input';
@@ -26,12 +27,12 @@ export function Login({onLogin, onRegister, error, isLoading}: LoginProps) {
         password: '',
     });
 
-    const handleLoginSubmit = async (e: React.FormEvent) => {
+    const handleLoginSubmit = async (e: FormEvent) => {
         e.preventDefault();
         await onLogin(loginData);
     };
 
-    const handleRegisterSubmit = async (e: React.FormEvent) => {
+    const handleRegisterSubmit = async (e: FormEvent) => {
         e.preventDefault();
         await onRegister(registerData);
     };
