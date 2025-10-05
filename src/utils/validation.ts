@@ -2,7 +2,9 @@
  * Validation utilities for form inputs and data
  */
 
-import type {Ticket} from "../types/ticket";
+
+import {TicketStatus} from "@/enums/TicketStatus.ts";
+import {Priority} from "@/enums/Priority.ts";
 
 /**
  * Validate ticket title
@@ -69,14 +71,14 @@ export const validateAgentName = (name: string): { isValid: boolean; error?: str
  * @returns Boolean indicating if transition is valid
  */
 export const isValidStatusTransition = (
-    currentStatus: Ticket["status"],
-    newStatus: Ticket["status"]
+    currentStatus: TicketStatus,
+    newStatus: TicketStatus
 ): boolean => {
     // Define valid transitions
-    const validTransitions: Record<Ticket["status"], Ticket["status"][]> = {
-        "Open": ["InProgress", "Resolved"],
-        "InProgress": ["Open", "Resolved"],
-        "Resolved": ["Open", "InProgress"] // Allow reopening resolved tickets
+    const validTransitions: Record<TicketStatus, TicketStatus[]> = {
+        [TicketStatus.Open]: [TicketStatus.InProgress, TicketStatus.Resolved],
+        [TicketStatus.InProgress]: [TicketStatus.Open, TicketStatus.Resolved],
+        [TicketStatus.Resolved]: [TicketStatus.Open, TicketStatus.InProgress] // Allow reopening resolved tickets
     };
 
     return validTransitions[currentStatus]?.includes(newStatus) ?? false;
@@ -87,8 +89,8 @@ export const isValidStatusTransition = (
  * @param priority - Priority to validate
  * @returns Boolean indicating if priority is valid
  */
-export const isValidPriority = (priority: string): priority is Ticket["priority"] => {
-    return ["Low", "Medium", "High", "Critical"].includes(priority as Ticket["priority"]);
+export const isValidPriority = (priority: number): priority is Priority => {
+    return Object.values(Priority).includes(priority as Priority);
 };
 
 /**
@@ -96,6 +98,6 @@ export const isValidPriority = (priority: string): priority is Ticket["priority"
  * @param status - Status to validate
  * @returns Boolean indicating if status is valid
  */
-export const isValidStatus = (status: string): status is Ticket["status"] => {
-    return ["Open", "InProgress", "Resolved"].includes(status as Ticket["status"]);
+export const isValidStatus = (status: number): status is TicketStatus => {
+    return Object.values(TicketStatus).includes(status as TicketStatus);
 };

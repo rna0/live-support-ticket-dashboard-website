@@ -1,9 +1,12 @@
+import type {Priority} from "@/enums/Priority.ts";
+import type {TicketStatus} from "@/enums/TicketStatus.ts";
+
 export interface Ticket {
     id: string;
     title: string;
     description: string;
-    priority: "Low" | "Medium" | "High" | "Critical";
-    status: "Open" | "InProgress" | "Resolved";
+    priority: Priority;
+    status: TicketStatus;
     assignedAgentId?: string;
     assignedAgent?: string;
     createdAt: string; // ISO datetime string from API
@@ -32,12 +35,19 @@ export interface TicketHistoryEntry {
 export interface CreateTicketRequest {
     title: string;
     description?: string;
-    priority: "Low" | "Medium" | "High" | "Critical";
+    priority: Priority;
     assignedAgentId?: string;
 }
 
+export interface CreateTicketPayload {
+    Title: string;
+    Description?: string;
+    Priority: Priority;
+    AssignedAgentId?: string;
+}
+
 export interface UpdateTicketStatusRequest {
-    status: "Open" | "InProgress" | "Resolved";
+    status: TicketStatus;
 }
 
 export interface AssignTicketRequest {
@@ -45,8 +55,8 @@ export interface AssignTicketRequest {
 }
 
 export interface TicketFilters {
-    status?: "Open" | "InProgress" | "Resolved";
-    priority?: "Low" | "Medium" | "High" | "Critical";
+    status?: TicketStatus;
+    priority?: Priority;
     q?: string;
     page?: number;
     pageSize?: number;

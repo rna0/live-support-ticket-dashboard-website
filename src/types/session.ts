@@ -2,7 +2,7 @@
 
 export interface CreateSessionRequest {
     userId: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 }
 
 export interface Session {
@@ -42,7 +42,6 @@ export interface MessagesResponse {
     hasMore: boolean;
 }
 
-// SignalR event payloads for messaging
 export interface ReceiveMessagePayload {
     messageId: string;
     sessionId: string;
@@ -87,4 +86,3 @@ export interface QueueTicket {
     priority: string;
     waitTime: string;
 }
-

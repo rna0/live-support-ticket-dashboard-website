@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {useNavigate} from "react-router-dom";
 import {Card, CardContent, CardHeader} from "./ui/card";
 import {Badge} from "./ui/badge";
 import {Button} from "./ui/button";
@@ -6,15 +7,18 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./u
 import {Clock, Plus, Search, Ticket as TicketIcon, User} from "lucide-react";
 import type {Ticket} from "../types/ticket";
 import {Input} from "@/components/ui/input.tsx";
-import {formatDateCompact, getAssignedAgentName, getPriorityColorClasses, getStatusColorClasses} from "@/utils";
+import {TicketStatusLabels} from "@/enums/TicketStatus.ts";
+import {PriorityLabels} from "@/enums/Priority.ts";
+import {getAssignedAgentName, getPriorityColorClasses, getStatusColorClasses} from "@/utils/ticket.ts";
+import {formatDateCompact} from "@/utils/date.ts";
 
 interface TicketListProps {
     tickets: Ticket[];
     onTicketClick: (ticket: Ticket) => void;
-    onCreateTicket: () => void;
 }
 
-export function TicketList({tickets, onTicketClick, onCreateTicket}: TicketListProps) {
+export function TicketList({tickets, onTicketClick}: TicketListProps) {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [priorityFilter, setPriorityFilter] = useState("all");
@@ -25,8 +29,8 @@ export function TicketList({tickets, onTicketClick, onCreateTicket}: TicketListP
         const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             description.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const ticketStatus = ticket.status;
-        const ticketPriority = ticket.priority;
+        const ticketStatus = TicketStatusLabels[ticket.status];
+        const ticketPriority = PriorityLabels[ticket.priority];
 
         const matchesStatus = statusFilter === "all" || ticketStatus === statusFilter;
         const matchesPriority = priorityFilter === "all" || ticketPriority === priorityFilter;
@@ -38,6 +42,14 @@ export function TicketList({tickets, onTicketClick, onCreateTicket}: TicketListP
         <div className="flex flex-col h-full">
             {/* Filter Controls */}
             <div className="p-6 border-b space-y-4">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-bold">Support Tickets</h1>
+                    <Button onClick={() => navigate("/tickets/create")}>
+                        <Plus className="h-4 w-4 mr-2"/>
+                        Create Ticket
+                    </Button>
+                </div>
+
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="relative flex-1">
                         <Search
@@ -81,76 +93,78 @@ export function TicketList({tickets, onTicketClick, onCreateTicket}: TicketListP
 
             {/* Ticket List */}
             <div className="flex-1 overflow-auto p-6">
-                <div className="space-y-4">
-                    {filteredTickets.map((ticket) => {
-                        const status = ticket.status;
-                        const priority = ticket.priority;
-                        const assigned = getAssignedAgentName(ticket);
+                {filteredTickets.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                        <TicketIcon className="h-12 w-12 text-muted-foreground mb-4"/>
+                        <h3 className="text-lg font-semibold mb-2">No tickets found</h3>
+                        <p className="text-muted-foreground mb-4">
+                            {searchQuery || statusFilter !== "all" || priorityFilter !== "all"
+                                ? "Try adjusting your filters"
+                                : "Create your first ticket to get started"}
+                        </p>
+                        {!searchQuery && statusFilter === "all" && priorityFilter === "all" && (
+                            <Button onClick={() => navigate("/tickets/create")}>
+                                <Plus className="h-4 w-4 mr-2"/>
+                                Create First Ticket
+                            </Button>
+                        )}
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {filteredTickets.map((ticket) => {
+                            const status = ticket.status;
+                            const priority = ticket.priority;
+                            const assigned = getAssignedAgentName(ticket);
 
-                        return (
-                            <Card
-                                key={ticket.id}
-                                className="cursor-pointer hover:shadow-md transition-shadow"
-                                onClick={() => onTicketClick(ticket)}
-                            >
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium truncate">{ticket.title}</h3>
-                                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                                {ticket.description}
-                                            </p>
+                            return (
+                                <Card
+                                    key={ticket.id}
+                                    className="cursor-pointer hover:shadow-md transition-shadow"
+                                    onClick={() => onTicketClick(ticket)}
+                                >
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-medium truncate">{ticket.title}</h3>
+                                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                                    {ticket.description}
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2 flex-shrink-0">
+                                                <Badge className={getPriorityColorClasses(priority)}>
+                                                    {PriorityLabels[priority]}
+                                                </Badge>
+                                                <Badge className={getStatusColorClasses(status)}>
+                                                    {TicketStatusLabels[status]}
+                                                </Badge>
+                                            </div>
                                         </div>
-                                        <div className="flex gap-2">
-                                            <Badge className={getPriorityColorClasses(priority)}>
-                                                {ticket.priority}
-                                            </Badge>
-                                            <Badge className={getStatusColorClasses(status)}>
-                                                {ticket.status}
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="pt-0">
-                                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center gap-1">
-                                                <User className="h-3 w-3"/>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div
+                                            className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4"/>
                                                 <span>{assigned}</span>
                                             </div>
-                                            <div className="flex items-center gap-1">
-                                                <Clock className="h-3 w-3"/>
-                                                <span>{formatDateCompact(ticket.updatedAt)}</span>
+                                            <div className="flex items-center gap-2">
+                                                <Clock className="h-4 w-4"/>
+                                                <span>{formatDateCompact(ticket.createdAt)}</span>
                                             </div>
+                                            {ticket.slaTimeLeft && (
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="h-4 w-4"/>
+                                                    <span>SLA: {ticket.slaTimeLeft}</span>
+                                                </div>
+                                            )}
                                         </div>
-                                        {ticket.slaTimeLeft && (
-                                            <Badge variant="outline" className="text-xs">
-                                                SLA: {ticket.slaTimeLeft}
-                                            </Badge>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-
-                    {filteredTickets.length === 0 && (
-                        <div className="text-center text-muted-foreground py-12">
-                            <TicketIcon className="h-12 w-12 mx-auto mb-4 opacity-50"/>
-                            <p>No tickets found matching your criteria</p>
-                        </div>
-                    )}
-                </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
-
-            {/* Floating Create Button */}
-            <Button
-                onClick={onCreateTicket}
-                className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg"
-                size="icon"
-            >
-                <Plus className="h-6 w-6"/>
-            </Button>
         </div>
     );
 }

@@ -1,15 +1,16 @@
 import {Badge} from "./ui/badge";
 import {Avatar, AvatarFallback} from "./ui/avatar";
 import {Button} from "./ui/button";
-import {Menu, Settings} from "lucide-react";
+import {LogOut, Menu, Settings} from "lucide-react";
 
 interface HeaderProps {
     onMenuClick: () => void;
     agentName: string;
     isOnline: boolean;
+    onLogout?: () => void;
 }
 
-export function Header({onMenuClick, agentName, isOnline}: HeaderProps) {
+export function Header({onMenuClick, agentName, isOnline, onLogout}: HeaderProps) {
     return (
         <header className="h-16 border-b bg-card px-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -49,6 +50,13 @@ export function Header({onMenuClick, agentName, isOnline}: HeaderProps) {
                 <Button variant="ghost" size="icon">
                     <Settings className="h-4 w-4"/>
                 </Button>
+
+                {onLogout && (
+                    <Button variant="ghost" size="sm" onClick={onLogout}>
+                        <LogOut className="h-4 w-4 mr-2"/>
+                        <span className="hidden sm:inline">Logout</span>
+                    </Button>
+                )}
             </div>
         </header>
     );

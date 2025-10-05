@@ -1,21 +1,23 @@
 import {Button} from "./ui/button";
 import {LayoutDashboard, Settings, Ticket, X} from "lucide-react";
 import {cn} from "@/lib/utils.ts";
+import {useLocation, useNavigate} from "react-router-dom";
 
 interface SidebarProps {
     isOpen: boolean;
     onClose: () => void;
-    activeTab: string;
-    onTabChange: (tab: string) => void;
 }
 
 const navigationItems = [
-    {id: "dashboard", label: "Dashboard", icon: LayoutDashboard},
-    {id: "tickets", label: "My Tickets", icon: Ticket},
-    {id: "settings", label: "Settings", icon: Settings},
+    {id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/"},
+    {id: "tickets", label: "My Tickets", icon: Ticket, path: "/tickets"},
+    {id: "settings", label: "Settings", icon: Settings, path: "/settings"},
 ];
 
-export function Sidebar({isOpen, onClose, activeTab, onTabChange}: SidebarProps) {
+export function Sidebar({isOpen, onClose}: SidebarProps) {
+    const navigate = useNavigate();
+    const location = useLocation();
+
     return (
         <>
             {/* Mobile overlay */}
@@ -45,13 +47,14 @@ export function Sidebar({isOpen, onClose, activeTab, onTabChange}: SidebarProps)
                     <nav className="flex-1 p-4 space-y-2">
                         {navigationItems.map((item) => {
                             const Icon = item.icon;
+                            const isActive = location.pathname === item.path || (item.path === "/" && location.pathname === "/");
                             return (
                                 <Button
                                     key={item.id}
-                                    variant={activeTab === item.id ? "secondary" : "ghost"}
+                                    variant={isActive ? "secondary" : "ghost"}
                                     className="w-full justify-start gap-3"
                                     onClick={() => {
-                                        onTabChange(item.id);
+                                        navigate(item.path);
                                         onClose();
                                     }}
                                 >

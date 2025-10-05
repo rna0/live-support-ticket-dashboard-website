@@ -7,10 +7,11 @@ import type {
     TicketStatusChangedPayload
 } from '../types/ticket';
 import type {
-    ReceiveMessagePayload,
-    AgentTypingPayload,
     AgentJoinedPayload,
     AgentLeftPayload,
+    AgentTypingPayload,
+    Attachment,
+    ReceiveMessagePayload,
     UpdateQueuePayload
 } from '../types/session';
 
@@ -129,11 +130,11 @@ class SignalRService {
     }
 
     // Client-to-server methods
-    async sendMessage(sessionId: string, text: string, attachments?: any[]): Promise<void> {
+    async sendMessage(sessionId: string, text: string, attachments?: Attachment[]): Promise<void> {
         if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
             throw new Error('SignalR connection is not established');
         }
-        await this.connection.invoke('SendMessage', { sessionId, text, attachments: attachments || [] });
+        await this.connection.invoke('SendMessage', {sessionId, text, attachments: attachments || []});
     }
 
     async joinRoom(sessionId: string): Promise<void> {

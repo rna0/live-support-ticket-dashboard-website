@@ -3,21 +3,23 @@
  */
 
 import type {Ticket} from "../types/ticket";
+import {Priority} from "@/enums/Priority.ts";
+import {TicketStatus} from "@/enums/TicketStatus.ts";
 
 /**
  * Get Tailwind CSS classes for priority badges
  * @param priority - Ticket priority level
  * @returns CSS class string for priority styling
  */
-export const getPriorityColorClasses = (priority: string): string => {
+export const getPriorityColorClasses = (priority: Priority): string => {
     switch (priority) {
-        case "Critical":
+        case Priority.Critical:
             return "bg-red-500 text-white hover:bg-red-600";
-        case "High":
+        case Priority.High:
             return "bg-orange-500 text-white hover:bg-orange-600";
-        case "Medium":
+        case Priority.Medium:
             return "bg-yellow-500 text-black hover:bg-yellow-600";
-        case "Low":
+        case Priority.Low:
             return "bg-green-500 text-white hover:bg-green-600";
         default:
             return "bg-gray-500 text-white hover:bg-gray-600";
@@ -29,13 +31,13 @@ export const getPriorityColorClasses = (priority: string): string => {
  * @param status - Ticket status
  * @returns CSS class string for status styling
  */
-export const getStatusColorClasses = (status: string): string => {
+export const getStatusColorClasses = (status: TicketStatus): string => {
     switch (status) {
-        case "Open":
+        case TicketStatus.Open:
             return "bg-blue-500 text-white hover:bg-blue-600";
-        case "InProgress":
+        case TicketStatus.InProgress:
             return "bg-orange-500 text-white hover:bg-orange-600";
-        case "Resolved":
+        case TicketStatus.Resolved:
             return "bg-green-500 text-white hover:bg-green-600";
         default:
             return "bg-gray-500 text-white hover:bg-gray-600";
@@ -47,15 +49,15 @@ export const getStatusColorClasses = (status: string): string => {
  * @param priority - Ticket priority level
  * @returns Badge variant string
  */
-export const getPriorityVariant = (priority: string): "default" | "secondary" | "destructive" | "outline" => {
+export const getPriorityVariant = (priority: Priority): "default" | "secondary" | "destructive" | "outline" => {
     switch (priority) {
-        case 'Critical':
+        case Priority.Critical:
             return 'destructive';
-        case 'High':
+        case Priority.High:
             return 'destructive';
-        case 'Medium':
+        case Priority.Medium:
             return 'default';
-        case 'Low':
+        case Priority.Low:
             return 'secondary';
         default:
             return 'default';
@@ -67,13 +69,13 @@ export const getPriorityVariant = (priority: string): "default" | "secondary" | 
  * @param status - Ticket status
  * @returns Badge variant string
  */
-export const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+export const getStatusVariant = (status: TicketStatus): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-        case 'Open':
+        case TicketStatus.Open:
             return 'destructive';
-        case 'InProgress':
+        case TicketStatus.InProgress:
             return 'default';
-        case 'Resolved':
+        case TicketStatus.Resolved:
             return 'secondary';
         default:
             return 'default';
@@ -96,13 +98,14 @@ export const getAssignedAgentName = (ticket: Ticket): string => {
  */
 export const getTicketStats = (tickets: Ticket[]) => {
     const total = tickets.length;
-    const open = tickets.filter(t => t.status === "Open").length;
-    const inProgress = tickets.filter(t => t.status === "InProgress").length;
-    const resolved = tickets.filter(t => t.status === "Resolved").length;
-    const critical = tickets.filter(t => t.priority === "Critical").length;
-    const high = tickets.filter(t => t.priority === "High").length;
-    const medium = tickets.filter(t => t.priority === "Medium").length;
-    const low = tickets.filter(t => t.priority === "Low").length;
+    const open = tickets.filter(t => t.status === TicketStatus.Open).length;
+    const inProgress = tickets.filter(t => t.status === TicketStatus.InProgress).length;
+    const resolved = tickets.filter(t => t.status === TicketStatus.Resolved).length;
+
+    const critical = tickets.filter(t => t.priority === Priority.Critical).length;
+    const high = tickets.filter(t => t.priority === Priority.High).length;
+    const medium = tickets.filter(t => t.priority === Priority.Medium).length;
+    const low = tickets.filter(t => t.priority === Priority.Low).length;
 
     return {
         total,
