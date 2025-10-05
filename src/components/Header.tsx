@@ -25,9 +25,9 @@ export function Header({onMenuClick, agentName, isOnline, onLogout}: HeaderProps
 
                 <div className="flex items-center gap-3">
                     <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
-                        <span className="text-primary-foreground text-sm font-semibold">ST</span>
+                        <span className="text-primary-foreground text-sm font-semibold">JF</span>
                     </div>
-                    <span className="font-semibold text-lg">SupportTech</span>
+                    <span className="font-semibold text-lg">Jiraff</span>
                 </div>
             </div>
 
