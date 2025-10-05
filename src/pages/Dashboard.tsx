@@ -1,6 +1,6 @@
 import {Card, CardContent, CardHeader, CardTitle} from "../components/ui/card";
 import {Badge} from "../components/ui/badge";
-import {AlertCircle, BarChart3, CheckCircle, Clock} from "lucide-react";
+import {AlertCircle, BarChart3, CheckCircle, Clock, Inbox} from "lucide-react";
 import type {Ticket} from "../types/ticket";
 import {getTicketStats} from "@/utils/ticket.ts";
 
@@ -82,6 +82,37 @@ export default function Dashboard({tickets}: DashboardProps) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Recent Tickets */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Tickets</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {tickets.length > 0 ? (
+                        <div className="space-y-4">
+                            {tickets.map((ticket) => (
+                                <div key={ticket.id} className="flex items-center gap-3 p-3 rounded-lg border">
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium">{ticket.title}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {ticket.description
+                                                ? `${ticket.description.substring(0, 60)}${ticket.description.length > 60 ? '...' : ''}`
+                                                : 'No description'}
+                                        </p>
+                                    </div>
+                                    <Badge variant="outline">{ticket.status}</Badge>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <Inbox className="h-10 w-10 text-muted-foreground mb-3" />
+                            <p className="text-muted-foreground">No tickets found</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
             {/* Recent Activity */}
             <Card>
