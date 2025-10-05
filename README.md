@@ -1,79 +1,121 @@
-# React + TypeScript + Vite
+# SupportTech Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
 
-Currently, two official plugins are available:
+SupportTech Dashboard is a professional, enterprise-grade ticket management system designed for customer support teams. Built with modern web technologies, this application enables support agents to efficiently manage customer tickets, collaborate in real-time, and provide timely assistance to customers.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react)
-  uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc)
-  uses [SWC](https://swc.rs/) for Fast Refresh
+![SupportTech Dashboard](public/favicon.svg)
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it,
-see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Real-time Ticket Management**: Monitor and update support tickets with real-time synchronization across all connected agents
+- **Agent Collaboration**: Communicate with other agents through an integrated messaging system
+- **Ticket Prioritization**: Organize tickets by priority (Critical, High, Medium, Low) and status (Open, In Progress, Resolved)
+- **Dashboard Analytics**: Track ticket statistics and agent performance through comprehensive visual analytics
+- **Responsive Design**: Optimized for both desktop and mobile experiences
+- **User Authentication**: Secure login and registration system with JWT authentication
+- **Ticket Assignment**: Assign tickets to specific agents and track ownership
+- **SLA Monitoring**: Track time-sensitive tickets and receive alerts for approaching SLA deadlines
 
-## Expanding the ESLint configuration
+## Technology Stack
 
-If you are developing a Production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React 19 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: TailwindCSS with Radix UI components
+- **State Management**: React Context API
+- **Real-time Communication**: SignalR (@microsoft/signalr)
+- **API Communication**: Axios
+- **Routing**: React Router v7
+- **Testing**: Vitest with React Testing Library
+- **Icons**: Lucide React
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js (v18.0.0 or higher)
+- npm or yarn
+
+### Environment Setup
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+VITE_API_URL=http://your-api-endpoint/api
+VITE_SIGNALR_URL=http://your-signalr-endpoint/hub
 ```
 
-You can also
-install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x)
-and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom)
-for React-specific lint rules:
+### Installation
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Install dependencies
+npm install
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Start the development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
+
+### Testing
+
+```bash
+# Run tests in watch mode
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests once
+npm run test:run
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+## Project Structure
+
+```
+src/
+├── components/        # UI components
+│   ├── ui/            # Base UI components (buttons, cards, etc.)
+│   └── __tests__/     # Component tests
+├── context/           # React Context providers
+├── enums/             # TypeScript enumerations
+├── hooks/             # Custom React hooks
+├── lib/               # Utility libraries
+├── pages/             # Page components
+├── services/          # API and communication services
+├── test/              # Test utilities
+├── types/             # TypeScript type definitions
+├── utils/             # Utility functions
+├── App.tsx            # Main application component
+└── main.tsx           # Application entry point
+```
+
+## Deployment
+
+The application can be deployed to any static hosting provider that supports single-page applications. The production build creates optimized assets in the `dist/` directory.
+
+```bash
+npm run build
+```
+
+## Contributing
+
+1. Follow the established code style and organization
+2. Write tests for new features
+3. Ensure all tests pass before submitting changes
+4. Use descriptive commit messages
+
+## License
+
+Proprietary - All rights reserved
+
+---
+
+© 2025 SupportTech. Last updated: October 5, 2025
