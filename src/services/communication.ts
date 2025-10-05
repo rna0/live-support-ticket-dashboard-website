@@ -44,7 +44,7 @@ class CommunicationService {
     private currentAgentId: string | null = null;
     private currentAgentName: string | null = null;
     private currentAgentEmail: string | null = null;
-    private heartbeatInterval: number | null = null;
+    private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
     private heartbeatIntervalMs = 45000;
     private signalRReadyPromise: Promise<void> | null = null;
     private signalRReadyResolve: (() => void) | null = null;
@@ -207,7 +207,16 @@ class CommunicationService {
         if (!this.currentAgentId) {
             throw new Error('No agent logged in');
         }
-        return apiService.assignTicket(this.currentAgentId, ticketId, assignment);
+
+        // If no assignment provided, create one with the current agent ID
+        const assignmentData: AssignTicketRequest = assignment || { agentId: this.currentAgentId };
+
+        // Ensure the agentId field is set in the request
+        if (!assignmentData.agentId) {
+            assignmentData.agentId = this.currentAgentId;
+        }
+
+        return apiService.assignTicket(this.currentAgentId, ticketId, assignmentData);
     }
 
     async deleteTicket(ticketId: string): Promise<void> {
