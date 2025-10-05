@@ -1,7 +1,7 @@
 import {Badge} from "./ui/badge";
 import {Avatar, AvatarFallback} from "./ui/avatar";
 import {Button} from "./ui/button";
-import {LogOut, Menu, Settings} from "lucide-react";
+import {LogOut, Menu} from "lucide-react";
 
 interface HeaderProps {
     onMenuClick: () => void;
@@ -47,9 +47,6 @@ export function Header({onMenuClick, agentName, isOnline, onLogout}: HeaderProps
                     </div>
                 </div>
 
-                <Button variant="ghost" size="icon">
-                    <Settings className="h-4 w-4"/>
-                </Button>
 
                 {onLogout && (
                     <Button variant="ghost" size="sm" onClick={onLogout}>

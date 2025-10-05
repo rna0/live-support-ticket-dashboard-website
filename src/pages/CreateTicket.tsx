@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {type FormEvent, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
@@ -47,7 +47,7 @@ export default function CreateTicket() {
         return Object.keys(errors).length === 0;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
 

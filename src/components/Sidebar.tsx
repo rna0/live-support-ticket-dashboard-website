@@ -1,5 +1,5 @@
 import {Button} from "./ui/button";
-import {LayoutDashboard, Settings, Ticket, X} from "lucide-react";
+import {LayoutDashboard, Ticket, X} from "lucide-react";
 import {cn} from "@/lib/utils.ts";
 import {useLocation, useNavigate} from "react-router-dom";
 
@@ -11,7 +11,6 @@ interface SidebarProps {
 const navigationItems = [
     {id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/"},
     {id: "tickets", label: "My Tickets", icon: Ticket, path: "/tickets"},
-    {id: "settings", label: "Settings", icon: Settings, path: "/settings"},
 ];
 
 export function Sidebar({isOpen, onClose}: SidebarProps) {

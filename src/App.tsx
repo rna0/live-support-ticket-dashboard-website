@@ -9,7 +9,6 @@ import type {Ticket} from "./types/ticket";
 import {useAuth} from "./hooks/useAuth";
 import {Navigate, Route, Routes} from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import Settings from "./pages/Settings";
 import CreateTicket from "./pages/CreateTicket";
 
 export default function App() {
@@ -172,9 +171,6 @@ export default function App() {
                             isAuthenticated ? <CreateTicket/> : <Navigate to="/login" replace/>
                         }/>
 
-                        <Route path="/settings" element={
-                            isAuthenticated ? <Settings/> : <Navigate to="/login" replace/>
-                        }/>
 
                         <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace/>}/>
                     </Routes>
