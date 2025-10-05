@@ -107,7 +107,7 @@ export default function Dashboard({tickets}: DashboardProps) {
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-8 text-center">
-                            <Inbox className="h-10 w-10 text-muted-foreground mb-3" />
+                            <Inbox className="h-10 w-10 text-muted-foreground mb-3"/>
                             <p className="text-muted-foreground">No tickets found</p>
                         </div>
                     )}

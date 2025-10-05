@@ -208,10 +208,8 @@ class CommunicationService {
             throw new Error('No agent logged in');
         }
 
-        // If no assignment provided, create one with the current agent ID
-        const assignmentData: AssignTicketRequest = assignment || { agentId: this.currentAgentId };
+        const assignmentData: AssignTicketRequest = assignment || {agentId: this.currentAgentId};
 
-        // Ensure the agentId field is set in the request
         if (!assignmentData.agentId) {
             assignmentData.agentId = this.currentAgentId;
         }
