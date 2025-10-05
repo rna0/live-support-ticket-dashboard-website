@@ -332,15 +332,15 @@ class CommunicationService {
 
         this.sendHeartbeat();
 
-        this.heartbeatInterval = setInterval(() => {
+        this.heartbeatInterval = window.setInterval(() => {
             this.sendHeartbeat();
-        }, this.heartbeatIntervalMs);
+        }, this.heartbeatIntervalMs) as unknown as number;
     }
 
     private stopHeartbeat(): void {
         if (this.heartbeatInterval) {
             console.log('[CommunicationService] Stopping heartbeat');
-            clearInterval(this.heartbeatInterval);
+            window.clearInterval(this.heartbeatInterval);
             this.heartbeatInterval = null;
         }
     }
